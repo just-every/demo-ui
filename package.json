@@ -1,6 +1,6 @@
 {
   "name": "@just-every/demo-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reusable conversation UI components for Ensemble-based applications",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
