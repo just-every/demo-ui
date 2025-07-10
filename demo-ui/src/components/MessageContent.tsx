@@ -1,33 +1,23 @@
-import React from 'react';
+// MessageContent.tsx (Updated to match border fixes)
+import React, { useState } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { TypingIndicator } from './TypingIndicator';
-import { ToolCall, ToolCallData } from './ToolCall';
+import { ToolCall } from './ToolCall';
+import type { MessageData } from './Message';
 import './style.scss';
 
 export interface MessageContentProps {
-    content: string;
-    thinkingContent?: string;
-    role: 'user' | 'assistant';
-    tools?: ToolCallData[];
-    isStreaming?: boolean;
-    showTools?: boolean;
-    showThinking?: boolean;
-    isTyping?: boolean;
+    message: MessageData;
     className?: string;
 }
 
 export const MessageContent: React.FC<MessageContentProps> = ({
-    content,
-    thinkingContent,
-    role,
-    tools = [],
-    isStreaming: _isStreaming = false,
-    showTools = true,
-    showThinking = true,
-    isTyping = false,
+    message,
     className = ''
 }) => {
+    const summary = message.metadata?.summary;
+    const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default if summary exists
     const renderContent = (text: string, isUser: boolean) => {
         if (isUser) {
             return DOMPurify.sanitize(text);
@@ -35,39 +25,69 @@ export const MessageContent: React.FC<MessageContentProps> = ({
         return DOMPurify.sanitize(marked.parse(text) as string);
     };
 
+    // Extract values from message
+    const content = message.content;
+    const thinkingContent = message.thinking_content;
+    const role = message.role;
+    const tools = message.tools || [];
+    const isTyping = message.role === 'assistant' && message.streaming && !message.content;
     const isUser = role === 'user';
-
     return (
-        <div className={`message-content ${role} ${className}`}>
-            {/* Thinking content for reasoning models */}
-            {showThinking && thinkingContent && (
-                <div className="glass thinking-content">
-                    <div className="thinking-body" dangerouslySetInnerHTML={{
-                            __html: renderContent(thinkingContent, false)
+        <div className={`message-content ${role} ${className}`} >
+            <div className="message-body glass" style={{
+                cursor: summary ? 'default' : 'pointer', 
+                background: `rgba(${message.color}, 0.03)`, // Lighter
+                borderColor: `rgba(${message.color}, 0.15)`, // Softer border
+            }}
+            onClick={() => summary && setIsExpanded(!isExpanded)}>
+                {summary && (
+                    <div 
+                        className={"message-summary"+(isExpanded ? ' expanded' : '')}
+                        style={{ 
+                            marginBottom: isExpanded ? '12px' : 0,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
                         }}
-                    />
-                </div>
-            )}
+                    >
+                        <span>{summary}</span>
+                        <span style={{ opacity: 0.5, flexShrink: 0 }}>
+                            {isExpanded ? '▼' : '◀'}
+                        </span>
+                    </div>
+                )}
+                {(!summary || isExpanded) && (
+                    <>
+                    {/* Thinking content for reasoning models */}
+                        {thinkingContent && (
+                            <div className="thinking-body" dangerouslySetInnerHTML={{
+                                    __html: renderContent(thinkingContent, false)
+                                }}
+                            />
+                        )}
 
-            {/* Tool calls */}
-            {showTools && tools.length > 0 && (
-                <div className="tool-calls">
-                    {tools.map((tool, index) => (
-                        <ToolCall className="glass" key={tool.id || index} toolCall={tool} />
-                    ))}
-                </div>
-            )}
+                        {/* Tool calls */}
+                        {tools.length > 0 && (
+                            <div className="tool-calls">
+                                {tools.map((tool, index) => (
+                                    <ToolCall className="glass" key={tool.id || index} toolCall={tool} />
+                                ))}
+                            </div>
+                        )}
 
-            {/* Main message content */}
-            {content && (
-                <div className="message-body glass">
-                    <div
-                        dangerouslySetInnerHTML={{
-                            __html: renderContent(content, isUser)
-                        }}
-                    />
-                </div>
-            )}
+                        {/* Main message content with summary */}
+                        {content && (
+                            <div dangerouslySetInnerHTML={{
+                                    __html: renderContent(content, isUser)
+                                }}
+                            />
+                        )}
+                    </>
+                )}
+            </div>
+            
+            
+            
 
             {/* Typing indicator */}
             {isTyping && (

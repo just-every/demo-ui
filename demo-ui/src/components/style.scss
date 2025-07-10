@@ -1996,11 +1996,6 @@ select:focus {
 }
 
 
-
-.transcript-section {
-    margin-top: 24px;
-}
-
 .transcript-header {
     display: flex;
     justify-content: space-between;
@@ -2151,6 +2146,104 @@ select:focus {
     opacity: 0.7;
 }
 
+.message-tags {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.message-tag {
+    background: rgba(74, 158, 255, 0.15);
+    color: var(--accent-primary);
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.message-tag:hover {
+    background: rgba(74, 158, 255, 0.25);
+    border-color: rgba(74, 158, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.message-agent-tags {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: 8px;
+}
+
+.message-agent-tag {
+    background: rgba(138, 43, 226, 0.15);
+    color: #ba6dff;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.message-agent-tag:hover {
+    background: rgba(138, 43, 226, 0.25);
+    border-color: rgba(138, 43, 226, 0.5);
+    transform: translateY(-1px);
+}
+
+.message-request-stats {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-left: 8px;
+}
+
+.request-cost {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.request-duration {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.duration-with-tools {
+    color: var(--text-tertiary);
+    font-size: 10px;
+}
+
+.message-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &.expanded {
+        padding: 4px 0 13px;
+        border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+    }
+}
+
+.message-prefix {
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 8px;
+}
+
 .message-avatar {
     flex-shrink: 0;
     display: flex;
@@ -2218,6 +2311,10 @@ select:focus {
 
         p:last-child, ul:last-child, ol:last-child {
             margin-bottom: 0;
+        }
+
+        pre {
+            white-space: pre-wrap;
         }
     }
 
@@ -2414,10 +2511,84 @@ select:focus {
     padding: 16px;
 }
 
+.conversation-container.with-graph {
+    padding: 16px 16px 16px 0;
+}
+
+.conversation-wrapper {
+    display: flex;
+    min-height: 100%;
+}
+
+.memory-tag-graph-wrapper {
+    flex-shrink: 0;
+    min-width: 40px;
+    padding-left: 8px;
+    padding-right: 8px;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100%;
+    transition: width 200ms ease-out;
+    animation: fadeIn 300ms ease-in;
+}
+
+.memory-tag-graph {
+    position: relative;
+    height: 100%;
+    
+    svg {
+        display: block;
+        position: relative;
+        
+        // Smooth transitions for all hover effects
+        circle, line, path, rect, text {
+            transition: all 0.2s ease;
+        }
+        
+        // Add animation for new tags
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        // Glow effect for hovered elements
+        circle[filter="blur(2px)"] {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.2;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        
+        // Label hover effects
+        g[style*="cursor: pointer"]:hover text {
+            transform: translateY(-1px);
+        }
+    }
+}
+
 .messages {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding-left: 0;
+}
+
+.conversation-container.with-graph .messages {
+    padding-left: 8px;
 }
 
 /* Thread styles */
@@ -2679,4 +2850,61 @@ select:focus {
             height: 16px;
         }
     }
+}
+/* Final merged and refined style.scss */
+
+/* Grid and Layout */
+.conversation-wrapper {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 8px; /* Reduced gap for closer integration */
+}
+
+.memory-tag-graph-wrapper {
+    position: sticky;
+    top: 0;
+    align-self: start;
+}
+
+/* Animations */
+.tag-introduction, .tagged-message {
+    animation: fadeIn 300ms ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Highlighted Message */
+.message.highlighted {
+    background: rgba(255,255,255,0.03); /* Softer background */
+    border-left: 3px solid rgba(255,255,255,0.2); /* Thinner, softer border */
+    transition: background 300ms ease-in-out, border-left 300ms;
+}
+
+/* Tagged Message Indicator */
+.tagged-message {
+    position: relative;
+}
+
+/* Removed ::before */
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .with-graph .conversation-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .memory-tag-graph-wrapper {
+        display: none;
+    }
+}
+
+/* Message Body Refinements (to fix bubble borders) */
+.message-body.glass {
+    border: 1px solid rgba(var(--color), 0.15); /* Softer border opacity */
+    border-radius: 12px; /* Ensure consistent rounding */
+    background: rgba(var(--color), 0.03); /* Lighter background */
+    backdrop-filter: blur(8px); /* Slightly less blur if overwhelming */
 }

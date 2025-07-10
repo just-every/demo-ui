@@ -41,51 +41,6 @@ function ChatApp() {
 }
 ```
 
-### With WebSocket Integration
-
-```tsx
-import { Conversation, useConversation, useEnsembleStream } from '@just-every/demo-ui';
-import useWebSocket from 'react-use-websocket';
-
-function EnsembleChat() {
-  const { messages, isStreaming, updateMessage, sendMessage, stopStreaming } = useConversation();
-  const { lastMessage, sendMessage: wsSend } = useWebSocket('ws://localhost:3005');
-
-  // Handle incoming WebSocket events
-  useEnsembleStream(lastMessage, {
-    onMessageUpdate: updateMessage,
-    onMessageCreate: (message) => {
-      // Add new assistant message
-    },
-    onStreamStart: () => {
-      // Handle stream start
-    },
-    onStreamEnd: () => {
-      // Handle stream end
-    },
-  });
-
-  const handleSendMessage = (content: string) => {
-    sendMessage(content);
-    wsSend(JSON.stringify({
-      type: 'chat',
-      messages: [...messages, { role: 'user', content }],
-    }));
-  };
-
-  return (
-    <Conversation
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      onStopStreaming={stopStreaming}
-      isStreaming={isStreaming}
-      showTimestamps
-      showModelInfo
-    />
-  );
-}
-```
-
 ### Advanced Customization
 
 ```tsx
@@ -199,22 +154,6 @@ const {
   updateMessage,
   deleteMessage,
 } = useConversation();
-```
-
-### `useEnsembleStream()`
-
-Processes Ensemble WebSocket events into conversation updates.
-
-```tsx
-useEnsembleStream(lastWebSocketMessage, {
-  onMessageUpdate: (id, updates) => { /* ... */ },
-  onMessageCreate: (message) => { /* ... */ },
-  onStreamStart: () => { /* ... */ },
-  onStreamEnd: () => { /* ... */ },
-  onError: (error) => { /* ... */ },
-  onCostUpdate: (cost) => { /* ... */ },
-  onFollowUpSuggestion: (suggestion) => { /* ... */ },
-});
 ```
 
 ## Message Types

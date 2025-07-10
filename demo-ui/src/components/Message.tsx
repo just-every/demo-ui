@@ -1,89 +1,175 @@
+// Message.tsx
 import React from 'react';
 import { MessageAvatar } from './MessageAvatar';
 import { MessageContent } from './MessageContent';
 import { MessageMetadata } from './MessageMetadata';
 import { ToolCallData } from './ToolCall';
+import type { ResponseOutputEvent, ResponseInputItem } from '@just-every/ensemble';
 import './style.scss';
+import type { RequestAgent } from '../utils/taskEventProcessor';
 
 export interface MessageData {
-    role: 'user' | 'assistant';
+    id?: string;  // Unique message ID
+    role: string;
+    color: string;  // Color for the role, used for styling
+    message: ResponseInputItem;
     content: string;
     thinking_content?: string;
     model?: string;
     modelClass?: string;
     tools?: ToolCallData[];
     streaming?: boolean;
-    timestamp?: number;
-    // Thread support
-    threadId?: string;
-    threadName?: string;
-    threadType?: 'main' | 'metamemory' | 'metacognition';
+    timestamp?: number | Date;
+    // RequestAgent fields
+    agentTags?: string[];
+    requestCost?: number;
+    requestDuration?: number;
+    durationWithTools?: number;
+    // Additional metadata
+    metadata?: Record<string, any>;
+}
+
+/**
+ * Convert ResponseOutputEvent to MessageData format for display
+ */
+export function convertResponseOutputEventToMessageData(
+    event: ResponseOutputEvent, 
+    tags?: string[], 
+    requestAgent?: RequestAgent,
+    summary?: string
+): MessageData {
+    const message = event.message;
+    
+    // Determine role - default to assistant if not specified
+    let role = 'Assistant';
+    if ('role' in message) {
+        role = message.role.charAt(0).toUpperCase() + message.role.slice(1);
+    }
+    switch (message?.type) {
+        case 'thinking':
+            role = 'Thinking';
+            break;
+        case 'function_call':
+            role = 'Tool';
+            break;
+        case 'function_call_output':
+            role = 'Result';
+            break;
+    }
+
+    let color = '255, 255, 255';
+    switch (role) {
+        case 'User':
+            color = '96, 165, 250';
+            break;
+        case 'Assistant':
+            color = '52, 211, 153';
+            break;
+        case 'Model':
+        case 'System':
+        case 'Developer':
+            color = '245, 101, 101';
+            break;
+        case 'Thinking':
+            color = '167, 139, 250';
+            break;
+        case 'Tool':
+        case 'Result':
+            color = '251, 191, 36';
+            break;
+    }
+    
+    // Handle content based on message type
+    let content = '';
+    let thinking_content = '';
+    let tools: ToolCallData[] = [];
+    
+    // Handle different message types
+    if (message.type === 'message') {
+        // Regular message - has content and role
+        if (typeof message.content === 'string') {
+            content = message.content;
+        } else if (Array.isArray(message.content)) {
+            content = message.content.map((item: any) => 
+                typeof item === 'string' ? item : item.text || ''
+            ).join('');
+        }
+    } else if (message.type === 'thinking') {
+        // Thinking message - content goes to thinking_content
+        if (typeof message.content === 'string') {
+            thinking_content = message.content;
+        } else if (Array.isArray(message.content)) {
+            thinking_content = message.content.map((item: any) => 
+                typeof item === 'string' ? item : item.text || ''
+            ).join('');
+        }
+    } else if (message.type === 'function_call') {
+        // Tool call message
+        const funcCall = message as any;
+        tools = [{
+            id: funcCall.call_id || funcCall.id || 'unknown',
+            function: {
+                name: funcCall.name || 'unknown',
+                arguments: funcCall.arguments || ''
+            }
+        }];
+        content = `${funcCall.name}`;
+    } else if (message.type === 'function_call_output') {
+        // Tool result message
+        const funcResult = message as any;
+        content = `${funcResult.output || funcResult.content || 'No output'}`;
+    }
+    
+    return {
+        id: message.id,
+        role,
+        color,
+        message,
+        content,
+        thinking_content,
+        tools,
+        streaming: message.status === 'in_progress',
+        timestamp: message.timestamp ? new Date(message.timestamp) : new Date(event.timestamp || Date.now()),
+        model: requestAgent?.agent?.model,
+        modelClass: requestAgent?.agent?.modelClass,
+        agentTags: requestAgent?.agent?.tags,
+        requestCost: requestAgent?.request_cost,
+        requestDuration: requestAgent?.request_duration,
+        durationWithTools: requestAgent?.duration_with_tools,
+        metadata: {
+            type: message.type,
+            status: message.status,
+            request_id: event.request_id,
+            tags: tags || [],
+            summary: summary
+        }
+    };
 }
 
 export interface MessageProps {
     message: MessageData;
-    showAvatar?: boolean;
-    showMetadata?: boolean;
-    showTimestamp?: boolean;
-    showModel?: boolean;
-    showTools?: boolean;
-    showThinking?: boolean;
-    showThreadInfo?: boolean;
-    avatarSize?: number;
     className?: string;
     isCompact?: boolean;
 }
 
 export const Message: React.FC<MessageProps> = ({
     message,
-    showAvatar = true,
-    showMetadata = true,
-    showTimestamp = true,
-    showModel = true,
-    showTools = true,
-    showThinking = true,
-    showThreadInfo = true,
-    avatarSize = 36,
     className = '',
     isCompact = false
 }) => {
-    const isTyping = message.role === 'assistant' && message.streaming && !message.content;
-    const threadClass = message.threadType ? `thread-${message.threadType}` : '';
     
     return (
-        <div className={`message ${message.role} ${threadClass} ${isCompact ? 'compact' : ''} ${className}`}>
-            {showMetadata && (
-                <MessageMetadata
-                    model={message.model}
-                    modelClass={message.modelClass}
-                    timestamp={message.timestamp}
-                    isStreaming={message.streaming}
-                    showModel={showModel}
-                    showTimestamp={showTimestamp}
-                    isTyping={isTyping}
-                    threadName={showThreadInfo ? message.threadName : undefined}
-                    threadType={showThreadInfo ? message.threadType : undefined}
-                />
-            )}
+        <div className={`message ${message.role} ${isCompact ? 'compact' : ''} ${className}`}>
+            <MessageMetadata message={message} />
 
             <div className="message-row">
-                {showAvatar && (
-                    <MessageAvatar
-                        role={message.role}
-                        size={avatarSize}
-                    />
-                )}
-
-                <MessageContent
-                    content={message.content}
-                    thinkingContent={message.thinking_content}
+                <MessageAvatar
                     role={message.role}
-                    tools={message.tools}
-                    isStreaming={message.streaming}
-                    showTools={showTools}
-                    showThinking={showThinking}
-                    isTyping={isTyping}
+                    color={message.color}
+                    size={36}
                 />
+
+                <MessageContent message={message} />
             </div>
         </div>
     );

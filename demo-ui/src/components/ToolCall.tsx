@@ -48,13 +48,6 @@ export const ToolCall: React.FC<ToolCallProps> = ({
                 <pre className="tool-arguments-content"><strong>{toolCall.function.name}(</strong>{showArguments && toolCall.function.arguments && (formatArguments(toolCall.function.arguments))}<strong>)</strong></pre>
             </div>
 
-            {showResult && !toolCall.result && (
-                <div className="tool-result">
-                    <pre className="tool-output">
-                        Generating...
-                    </pre>
-                </div>
-            )}
             {showResult && toolCall.result && (
                 <div className="tool-result">
                     {toolCall.result.error ? (

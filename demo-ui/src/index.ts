@@ -7,6 +7,9 @@ export { Modal } from './components/Modal';
 
 // Demo Components
 export { default as DemoHeader } from './components/DemoHeader';
+export { default as LLMRequestLog } from './components/LLMRequestLog';
+export type { LLMRequestData } from './utils/llmLogger';
+export { RequestDemoLogger, enableRequestDemoLogger } from './utils/llmLogger';
 
 // Status and Feedback Components
 export { default as ErrorMessage } from './components/ErrorMessage';
@@ -25,6 +28,7 @@ export { ToolCall, type ToolCallData } from './components/ToolCall';
 export { TypingIndicator } from './components/TypingIndicator';
 export { Conversation } from './components/Conversation';
 export { ConversationInput } from './components/ConversationInput';
+export { MemoryTagGraph } from './components/MemoryTagGraph';
 
 // Audio Components
 export { AudioVisualizer } from './components/AudioVisualizer';
@@ -50,6 +54,18 @@ export { CodeDisplay } from './components/CodeDisplay';
 export { CodeModal, type CodeTab } from './components/CodeModal';
 export { ShowCodeButton } from './components/ShowCodeButton';
 
+// Task Event Components
+export { CognitionView, type CognitionViewProps } from './components/CognitionView';
+export { MemoryView, type MemoryViewProps } from './components/MemoryView';
+export { 
+    CustomEventView, 
+    ImageGalleryView, 
+    DesignIterationsView,
+    type CustomEventViewProps,
+    type ImageGalleryViewProps,
+    type DesignIterationsViewProps
+} from './components/CustomEventView';
+
 // Embedding and Search Components
 export { EmbeddingItem, type EmbeddingData } from './components/EmbeddingItem';
 export { EmbeddingsList } from './components/EmbeddingsList';
@@ -61,15 +77,54 @@ export { AnalysisDisplay } from './components/AnalysisDisplay';
 // Hooks
 export { useAutoScroll } from './hooks/useAutoScroll';
 export { useWebSocketMessage, type WebSocketMessage, type MessageHandler } from './hooks/useWebSocketMessage';
-export { useEnsembleStream, type EnsembleStreamState, type EnsembleStreamOptions } from './hooks/useEnsembleStream';
 export { useWebSocketAudio, type WebSocketAudioState, type WebSocketAudioOptions, type AudioChunk } from './hooks/useWebSocketAudio';
 export { useCopyToClipboard } from './hooks/useCopyToClipboard';
 export { useLocalStorage } from './hooks/useLocalStorage';
 export { useDebounce } from './hooks/useDebounce';
+export { useTaskEventProcessor } from './hooks/useTaskEventProcessor';
+export { 
+    useMetaMemoryProcessor, 
+    useMetaCognitionProcessor,
+    useTaskEventProcessors 
+} from './hooks/useMetaEventProcessors';
+export { 
+    useCustomEventProcessor,
+    useMultipleCustomEventProcessors,
+    useImageGallery,
+    useDesignIterations,
+    useTaskEventProcessorsWithCustom,
+    type UseCustomEventProcessorReturn
+} from './hooks/useCustomEventProcessor';
+export { useTaskState, type TaskState } from './hooks/useTaskState';
 
 // Utilities
 export * from './utils/formatters';
 export * from './utils/codeGenerators';
+export { TaskEventProcessor, createTaskEventProcessor, type ProcessedEventData } from './utils/taskEventProcessor';
+export { 
+    MetaMemoryEventProcessor, 
+    createMetaMemoryEventProcessor, 
+    type MetaMemoryEventData,
+    type MemoryTaggingEvent,
+    type MetaMemoryStats
+} from './utils/metaMemoryEventProcessor';
+export { 
+    MetaCognitionEventProcessor, 
+    createMetaCognitionEventProcessor,
+    type MetaCognitionEventData,
+    type CognitionAnalysisEvent,
+    type MetaCognitionStats
+} from './utils/metaCognitionEventProcessor';
+export { 
+    CustomEventProcessor,
+    createCustomEventProcessor,
+    createImageEventProcessor,
+    createDesignIterationProcessor,
+    type CustomEvent,
+    type CustomEventProcessorOptions,
+    type ImageData,
+    type DesignIterationData
+} from './utils/customEventProcessor';
 
 // Import styles
 import './components/style.scss';

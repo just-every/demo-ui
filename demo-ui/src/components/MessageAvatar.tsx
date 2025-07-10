@@ -2,38 +2,38 @@ import React from 'react';
 import './style.scss';
 
 export interface MessageAvatarProps {
-    role: 'user' | 'assistant';
+    role: string;
+    color: string;
     size?: number;
     className?: string;
 }
 
 export const MessageAvatar: React.FC<MessageAvatarProps> = ({ 
     role, 
+    color, 
     size = 36, 
     className = '' 
 }) => {
-    const isUser = role === 'user';
-    
+
     return (
         <div 
-            className={`message-avatar ${role} ${className}`}
+            className={`message-avatar ${role.toLowerCase()} ${className}`}
             style={{
                 width: `${size}px`,
                 height: `${size}px`,
                 borderRadius: '50%',
-                background: isUser ? 'var(--accent-primary)' : 'var(--accent-success)',
-                boxShadow: isUser 
-                    ? '0 0 10px var(--accent-primary-glow)'
-                    : '0 0 10px rgba(16, 185, 129, 0.4)',
+                background: `rgba(${color}, 0.06)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
                 fontWeight: 'bold',
-                fontSize: `${size * 0.4}px`
+                fontSize: `${size * 0.4}px`,
+                marginTop: '10px',
+                backdropFilter: 'blur(8px)',
             }}
         >
-            {isUser ? 'U' : 'A'}
+            {role.charAt(0).toUpperCase()}
         </div>
     );
 };
