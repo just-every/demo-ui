@@ -5,6 +5,7 @@ import type { TaskState } from '../hooks/useTaskState';
 import { formatDuration } from '../utils/formatters';
 import './style.scss';
 import './MemoryView.scss';
+import './MemoryView.compaction.scss';
 
 export interface MemoryViewProps {
     taskState: TaskState;
@@ -15,9 +16,10 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
     taskState,
     className = ''
 }) => {
-    const [activeTab, setActiveTab] = useState<'topics' | 'messages' | 'events'>('topics');
+    const [activeTab, setActiveTab] = useState<'topics' | 'messages' | 'events' | 'compaction'>('topics');
     const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+    const [expandedCompactions, setExpandedCompactions] = useState<Set<string>>(new Set());
 
     const toggleMessageExpanded = (messageId: string) => {
         const newExpanded = new Set(expandedMessages);
@@ -27,6 +29,16 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
             newExpanded.add(messageId);
         }
         setExpandedMessages(newExpanded);
+    };
+
+    const toggleCompactionExpanded = (topicTag: string) => {
+        const newExpanded = new Set(expandedCompactions);
+        if (newExpanded.has(topicTag)) {
+            newExpanded.delete(topicTag);
+        } else {
+            newExpanded.add(topicTag);
+        }
+        setExpandedCompactions(newExpanded);
     };
 
     const findOriginalMessage = (messageId: string) => {
@@ -226,6 +238,142 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
         );
     };
 
+    // Render compaction visualization for a topic
+    const renderCompactionVisualization = (topic: string, metadata: TopicTagMetadata) => {
+        const isExpanded = expandedCompactions.has(topic);
+        const targetCompaction = metadata.target_compaction_percent || 0;
+        
+        // Get messages for this topic to calculate stats
+        const topicMessages = Array.from(taggedMessages.entries()).filter(([_, msgMeta]) =>
+            msgMeta.topic_tags.includes(topic)
+        );
+        
+        const totalMessages = topicMessages.length;
+        const totalChars = topicMessages.reduce((sum, [_, msgMeta]) => sum + (msgMeta.summary?.length || 0), 0);
+        const estimatedTokens = Math.ceil(totalChars / 4);
+        
+        // Calculate visual metrics
+        const compactionPercentage = targetCompaction;
+        const retainedPercentage = 100 - compactionPercentage;
+        
+        // Determine compaction status color
+        const getCompactionColor = (percent: number) => {
+            if (percent === 0) return '#6c757d'; // gray - no compaction
+            if (percent <= 20) return '#28a745'; // green - light compaction
+            if (percent <= 50) return '#ffc107'; // yellow - moderate compaction
+            if (percent <= 80) return '#fd7e14'; // orange - heavy compaction
+            return '#dc3545'; // red - maximum compaction
+        };
+        
+        const compactionColor = getCompactionColor(targetCompaction);
+        
+        return (
+            <div key={topic} className={`compaction-item ${metadata.type}`}>
+                <div className="compaction-header" onClick={() => toggleCompactionExpanded(topic)}>
+                    <div className="compaction-title">
+                        <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                        <span className="topic-name">{topic}</span>
+                        <span className={`topic-type ${metadata.type}`}>{metadata.type}</span>
+                    </div>
+                    <div className="compaction-stats">
+                        <span className="message-count">{totalMessages} messages</span>
+                        <span className="token-count">~{estimatedTokens} tokens</span>
+                    </div>
+                </div>
+                
+                <div className="compaction-visualization">
+                    <div className="compaction-bar-container">
+                        <div className="compaction-bar">
+                            <div 
+                                className="retained-section" 
+                                style={{ 
+                                    width: `${retainedPercentage}%`,
+                                    backgroundColor: '#4CAF50'
+                                }}
+                                title={`Retained: ${retainedPercentage}%`}
+                            />
+                            <div 
+                                className="compacted-section" 
+                                style={{ 
+                                    width: `${compactionPercentage}%`,
+                                    backgroundColor: compactionColor
+                                }}
+                                title={`Compacted: ${compactionPercentage}%`}
+                            />
+                        </div>
+                        <div className="compaction-labels">
+                            <span className="retained-label">Retained: {retainedPercentage}%</span>
+                            <span className="compacted-label">Target: {targetCompaction}%</span>
+                        </div>
+                    </div>
+                    
+                    <div className="compaction-visual">
+                        <div className="folder-comparison">
+                            <div className="folder original">
+                                <div className="folder-icon">📁</div>
+                                <div className="folder-size">{totalMessages} msgs</div>
+                                <div className="folder-label">Original</div>
+                            </div>
+                            <div className="arrow">→</div>
+                            <div className="folder compacted">
+                                <div className="folder-icon" style={{ fontSize: `${0.5 + (retainedPercentage / 100) * 0.5}em` }}>📦</div>
+                                <div className="folder-size">{Math.ceil(totalMessages * retainedPercentage / 100)} msgs</div>
+                                <div className="folder-label">After Compaction</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {isExpanded && (
+                    <div className="compaction-details">
+                        <div className="compaction-info">
+                            <h4>Compaction Strategy</h4>
+                            <p className="strategy-description">
+                                {metadata.type === 'core' && 'Core topics receive minimal compaction to preserve important context.'}
+                                {metadata.type === 'active' && 'Active topics are moderately compacted while maintaining recent context.'}
+                                {metadata.type === 'idle' && 'Idle topics are aggressively compacted to save space.'}
+                                {metadata.type === 'archived' && 'Archived topics are fully compacted into summaries.'}
+                                {metadata.type === 'ephemeral' && 'Ephemeral topics are quickly compacted as they age.'}
+                            </p>
+                            
+                            <div className="compaction-metrics">
+                                <div className="metric">
+                                    <span className="metric-label">Last Updated:</span>
+                                    <span className="metric-value">{new Date(metadata.last_update).toLocaleString()}</span>
+                                </div>
+                                <div className="metric">
+                                    <span className="metric-label">Age:</span>
+                                    <span className="metric-value">
+                                        {formatDuration(Date.now() - metadata.last_update)}
+                                    </span>
+                                </div>
+                                <div className="metric">
+                                    <span className="metric-label">Estimated Savings:</span>
+                                    <span className="metric-value">
+                                        ~{Math.floor(estimatedTokens * compactionPercentage / 100)} tokens
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="compaction-preview">
+                            <h4>Compaction Preview</h4>
+                            <div className="preview-note">
+                                {targetCompaction === 0 ? (
+                                    <p>No compaction scheduled for this topic.</p>
+                                ) : targetCompaction === 100 ? (
+                                    <p>All messages will be compacted into a single comprehensive summary.</p>
+                                ) : (
+                                    <p>The oldest {targetCompaction}% of messages will be compacted into a summary, preserving recent context.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     // Convert objects to Maps if needed (handles JSON serialization)
     const topicTags: Map<string, TopicTagMetadata> = taskState.memoryData.currentState?.topicTags instanceof Map 
         ? taskState.memoryData.currentState.topicTags 
@@ -299,6 +447,15 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
                 >
                     Event Log
                 </button>
+                <button
+                    className={`tab ${activeTab === 'compaction' ? 'active' : ''}`}
+                    onClick={() => {
+                        setActiveTab('compaction');
+                        setSelectedTopic(null);
+                    }}
+                >
+                    Compaction
+                </button>
             </div>
 
             {selectedTopic && activeTab === 'messages' && (
@@ -355,6 +512,29 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
                             <div className="empty-state">
                                 <div className="empty-icon">📝</div>
                                 <p>No tagging events yet</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'compaction' && (
+                    <div className="compaction-section">
+                        {topicTags.size > 0 ? (
+                            <div className="compaction-list">
+                                {Array.from(topicTags.entries())
+                                    .sort((a, b) => {
+                                        // Sort by compaction percentage (descending), then by last update
+                                        const compA = a[1].target_compaction_percent || 0;
+                                        const compB = b[1].target_compaction_percent || 0;
+                                        if (compA !== compB) return compB - compA;
+                                        return b[1].last_update - a[1].last_update;
+                                    })
+                                    .map(([topic, metadata]) => renderCompactionVisualization(topic, metadata))}
+                            </div>
+                        ) : (
+                            <div className="empty-state">
+                                <div className="empty-icon">📦</div>
+                                <p>No topics available for compaction</p>
                             </div>
                         )}
                     </div>

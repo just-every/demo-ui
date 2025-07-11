@@ -195,11 +195,9 @@ branches.forEach(branch => {
                 </defs>
                 {/* Trunk line */}
                 <g className="trunk">
-                    <line
-                        x1={trunkX}
-                        y1={adjustedMinY}
-                        x2={trunkX}
-                        y2={adjustedMaxY}
+                    <path
+                        d={`M ${trunkX} ${adjustedMinY} L ${trunkX} ${adjustedMaxY}`}
+                        fill="none"
                         stroke="rgba(255,255,255,0.1)"
                         strokeWidth={LINE_WIDTH}
                         strokeLinecap="round"
@@ -251,11 +249,9 @@ branches.forEach(branch => {
                                                 strokeWidth="0.5"
                                                 style={{ cursor: 'pointer' }}
                                             />
-                                            <line
-                                                x1={x + 5}
-                                                y1={y}
-                                                x2={graphWidth - 5}
-                                                y2={y}
+                                            <path
+                                                d={`M ${x + 5} ${y} L ${graphWidth - 5} ${y}`}
+                                                fill="none"
                                                 stroke={`rgba(${r},${g},${b},${CONNECTOR_OPACITY})`}
                                                 strokeWidth={1}
                                                 strokeDasharray="2 2"
@@ -270,11 +266,9 @@ branches.forEach(branch => {
                                 
                                 return (
                                     <g key={`${branch.tag}-${idx}`}>
-                                        <line
-                                            x1={x}
-                                            y1={y1}
-                                            x2={x}
-                                            y2={y2}
+                                        <path
+                                            d={`M ${x} ${y1} L ${x} ${y2}`}
+                                            fill="none"
                                             stroke={`rgba(${r},${g},${b},0.6)`}
                                             strokeWidth={LINE_WIDTH}
                                             strokeLinecap="round"
@@ -289,11 +283,9 @@ branches.forEach(branch => {
                                             style={{ cursor: 'pointer' }}
                                         />
                                         {/* Horizontal connector */}
-                                        <line
-                                            x1={x + 5}
-                                            y1={y2}
-                                            x2={graphWidth - 5}
-                                            y2={y2}
+                                        <path
+                                            d={`M ${x + 5} ${y2} L ${graphWidth - 5} ${y2}`}
+                                            fill="none"
                                             stroke={`rgba(${r},${g},${b},${CONNECTOR_OPACITY})`}
                                             strokeWidth={1}
                                             strokeDasharray="2 2"
@@ -342,11 +334,9 @@ branches.forEach(branch => {
                                         fill="rgba(255,255,255,0.3)"
                                         stroke="none"
                                     />
-                                    <line
-                                        x1={trunkX + 5}
-                                        y1={y}
-                                        x2={graphWidth - 5}
-                                        y2={y}
+                                    <path
+                                        d={`M ${trunkX + 5} ${y} L ${graphWidth - 5} ${y}`}
+                                        fill="none"
                                         stroke={`rgba(255,255,255,${CONNECTOR_OPACITY})`}
                                         strokeWidth={1}
                                         strokeDasharray="2 2"

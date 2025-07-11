@@ -55,35 +55,37 @@ export const MessageMetadata: React.FC<MessageMetadataProps> = ({
 
     return (
         <div className={`message-metadata ${className}`}>
-            <span className="message-prefix">{message.role}</span> 
-            {(modelClass || model) && (
-                <span className="message-model">
-                    {modelClass && (
-                        <>
-                            {modelClass}
-                            {model && <span> • {model}</span>}
-                        </>
-                    )}
-                    {!modelClass && model && (
-                        <span>{model}</span>
-                    )}
-                </span>
-            )}
-            {requestDuration !== undefined && (
-                <span className="streaming-status"> • {formatDuration(requestDuration)}</span>
-            )}
-            {isTyping && (
-                <span className="streaming-status"> • Responding...</span>
-            )}
-            {agentTags.length > 0 && (
-                <span className="message-agent-tags">
-                    {agentTags.map((tag: string, index: number) => (
-                        <span key={tag} className="message-agent-tag">
-                            {tag}
-                        </span>
-                    ))}
-                </span>
-            )}
+            <span className="message-prefix">{message.role}</span>
+            <div className="message-details">
+                {(modelClass || model) && (
+                    <span className="message-model">
+                        {modelClass && (
+                            <>
+                                {modelClass}
+                                {model && <span> • {model}</span>}
+                            </>
+                        )}
+                        {!modelClass && model && (
+                            <span>{model}</span>
+                        )}
+                    </span>
+                )}
+                {requestDuration !== undefined && (
+                    <span className="streaming-status"> • {formatDuration(requestDuration)}</span>
+                )}
+                {isTyping && (
+                    <span className="streaming-status"> • Responding...</span>
+                )}
+                {agentTags.length > 0 && (
+                    <span className="message-agent-tags">
+                        {agentTags.map((tag: string, index: number) => (
+                            <span key={tag} className="message-agent-tag">
+                                {tag}
+                            </span>
+                        ))}
+                    </span>
+                )}
+            </div>
         </div>
     );
 };
