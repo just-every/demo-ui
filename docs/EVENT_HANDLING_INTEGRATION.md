@@ -11,26 +11,34 @@ The event handling system provides a unified way to process and display various 
 - **MetaCognition Events** - Monitor strategy adjustments and reasoning
 - **Custom Events** - Handle task-specific data (images, iterations, etc.)
 
+### Available Hooks
+
+- **`useTaskState`** (Recommended) - Unified hook that manages all event processors and provides a single state object
+- **`useCustomEventProcessor`** - For handling custom event types
+- **`useMetaMemoryProcessor`** - For handling memory events only
+- **`useMetaCognitionProcessor`** - For handling cognition events only
+- **`useTaskEventProcessor`** - For handling core task events only
+
 ## Quick Start
 
-### 1. Basic Integration
+### 1. Basic Integration with useTaskState (Recommended)
 
 ```typescript
 import { 
-  useTaskEventProcessors,
+  useTaskState,
   Conversation,
   LLMRequestLog,
-  CognitionView
+  CognitionView,
+  MemoryView
 } from '@just-every/demo-ui';
 
 function MyDemoApp() {
   const { 
-    processEvent, 
-    messages, 
-    llmRequests, 
-    memoryData, 
-    cognitionData
-  } = useTaskEventProcessors();
+    state,
+    processEvent,
+    reset,
+    addUserMessage
+  } = useTaskState();
 
   // Connect to WebSocket and process events
   useEffect(() => {
@@ -46,10 +54,13 @@ function MyDemoApp() {
 
   return (
     <div>
-      <Conversation messages={messages} />
-      <LLMRequestLog requests={llmRequests} />
-      <CognitionView data={cognitionData} />
-      <MemoryView data={memoryData} messages={messages} />
+      <Conversation 
+        taskState={state}
+        isLoading={state.isLoading}
+      />
+      <LLMRequestLog requests={state.llmRequests} />
+      <CognitionView data={state.cognitionData} />
+      <MemoryView data={state.memoryData} messages={state.messages} />
     </div>
   );
 }
@@ -57,51 +68,67 @@ function MyDemoApp() {
 
 ### 2. With Custom Events
 
-For tasks that generate custom data (like images or design iterations):
+For tasks that generate custom data (like images or design iterations), you can combine `useTaskState` with custom event processors:
 
 ```typescript
 import { 
-  useTaskEventProcessorsWithCustom,
+  useTaskState,
+  useCustomEventProcessor,
+  useImageGallery,
+  Conversation,
   ImageGalleryView,
   DesignIterationsView
 } from '@just-every/demo-ui';
 
 function DesignDemoApp() {
-  const { 
-    processEvent,
-    messages,
-    llmRequests,
-    customProcessors
-  } = useTaskEventProcessorsWithCustom({
-    'image_generated': {
-      eventType: 'image_generated',
-      maxHistory: 100,
-      reducer: (state, event) => ({
-        ...state,
-        images: [...(state.images || []), event.data],
-        latestImage: event.data
-      })
+  const { state, processEvent: processTaskEvent } = useTaskState();
+  
+  // Use predefined image gallery hook
+  const imageGallery = useImageGallery();
+  
+  // Or create custom processor
+  const designProcessor = useCustomEventProcessor({
+    eventType: 'design_iteration',
+    subtypes: ['new_version', 'feedback', 'approval'],
+    initialState: {
+      iterations: [],
+      currentVersion: 0
     },
-    'design_iteration': {
-      eventType: 'design_iteration',
-      subtypes: ['new_version', 'feedback', 'approval']
+    reducer: (state, event) => {
+      // Custom logic for your events
+      return state;
     }
   });
 
-  // ... WebSocket setup ...
+  // Process all events
+  const processEvent = (event: any) => {
+    // Route to task processor
+    processTaskEvent(event);
+    
+    // Route to custom processors
+    if (event.type === 'image_generated') {
+      imageGallery.processEvent(event);
+    } else if (event.type === 'design_iteration') {
+      designProcessor.processEvent(event);
+    }
+  };
 
   return (
     <>
-      <Conversation messages={messages} />
+      <Conversation taskState={state} />
       
-      {customProcessors?.image_generated && (
-        <ImageGalleryView
-          images={customProcessors.image_generated.state.images}
-          latestImage={customProcessors.image_generated.state.latestImage}
-          columns={3}
-          imageSize="medium"
-        />
-      )}
+      <ImageGalleryView
+        images={imageGallery.state.images}
+        latestImage={imageGallery.state.latestImage}
+        columns={3}
+        imageSize="medium"
+      />
+      
+      {/* Custom view for design iterations */}
+      <DesignIterationsView
+        iterations={designProcessor.state.iterations}
+        currentVersion={designProcessor.state.currentVersion}
+      />
     </>
   );
 }
@@ -180,38 +207,57 @@ function DesignDemoApp() {
 ### Pattern 1: Tab-Based UI with All Event Types
 
 ```typescript
+import { useTaskState, TabGroup, TabPanel } from '@just-every/demo-ui';
+
 function ComprehensiveDemoApp() {
   const [activeTab, setActiveTab] = useState<'chat' | 'requests' | 'memory' | 'cognition'>('chat');
   
   const { 
+    state,
     processEvent,
-    messages,
-    llmRequests,
-    memoryData,
-    cognitionData,
-    reset
-  } = useTaskEventProcessors();
+    reset,
+    addUserMessage
+  } = useTaskState();
 
   // Add user message before starting task
   const startTask = async (prompt: string) => {
     reset(); // Clear previous data
-    
-    // Add user message to conversation
-    const { addUserMessage } = taskProcessor;
-    addUserMessage(prompt);
+    addUserMessage(prompt); // Add user message to conversation
     
     // Start the task
     await runTask(prompt);
   };
 
+  const tabs = [
+    { id: 'chat', label: 'Conversation' },
+    { id: 'requests', label: 'LLM Requests' },
+    { id: 'memory', label: 'Memory' },
+    { id: 'cognition', label: 'Cognition' }
+  ];
+
   return (
     <div>
-      <TabNavigation activeTab={activeTab} onChange={setActiveTab} />
+      <TabGroup 
+        tabs={tabs}
+        activeTab={activeTab} 
+        onChange={setActiveTab} 
+      />
       
-      {activeTab === 'chat' && <Conversation messages={messages} />}
-      {activeTab === 'requests' && <LLMRequestLog requests={llmRequests} />}
-      {activeTab === 'memory' && <MemoryView data={memoryData} />}
-      {activeTab === 'cognition' && <CognitionView data={cognitionData} />}
+      <TabPanel value={activeTab} tabValue="chat">
+        <Conversation taskState={state} />
+      </TabPanel>
+      
+      <TabPanel value={activeTab} tabValue="requests">
+        <LLMRequestLog requests={state.llmRequests} />
+      </TabPanel>
+      
+      <TabPanel value={activeTab} tabValue="memory">
+        <MemoryView data={state.memoryData} messages={state.messages} />
+      </TabPanel>
+      
+      <TabPanel value={activeTab} tabValue="cognition">
+        <CognitionView data={state.cognitionData} />
+      </TabPanel>
     </div>
   );
 }
@@ -254,7 +300,7 @@ function CustomDemoApp() {
 
 ```typescript
 function SSEDemoApp() {
-  const { processEvent, messages, llmRequests } = useTaskEventProcessors();
+  const { state, processEvent } = useTaskState();
 
   const runTaskWithSSE = async (prompt: string) => {
     const response = await fetch('/api/task/run', {
@@ -367,7 +413,7 @@ const multiModalProcessor = createCustomEventProcessor({
 
 ```typescript
 const robustEventProcessor = () => {
-  const { processEvent } = useTaskEventProcessors();
+  const { processEvent } = useTaskState();
 
   const safeProcessEvent = (event: any) => {
     try {
@@ -410,12 +456,12 @@ const optimizedProcessor = createCustomEventProcessor({
 
 ```typescript
 function PersistentDemoApp() {
-  const { processEvent, messages } = useTaskEventProcessors();
+  const { state, processEvent } = useTaskState();
   
   // Save state to localStorage
   useEffect(() => {
-    localStorage.setItem('demo_messages', JSON.stringify(messages));
-  }, [messages]);
+    localStorage.setItem('demo_messages', JSON.stringify(state.messages));
+  }, [state.messages]);
   
   // Restore on mount
   useEffect(() => {
@@ -482,12 +528,50 @@ ws.onmessage = (event) => {
 
 After:
 ```typescript
-const { processEvent } = useTaskEventProcessors();
+const { processEvent } = useTaskState();
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   processEvent(data); // Handles all event types automatically
 };
+```
+
+### From Individual Processors to useTaskState
+
+The new `useTaskState` hook provides a more integrated experience:
+
+Before (using individual processors):
+```typescript
+const taskProcessor = useTaskEventProcessor();
+const memoryProcessor = useMetaMemoryProcessor();
+const cognitionProcessor = useMetaCognitionProcessor();
+
+// Had to manage routing manually
+const processEvent = (event) => {
+  switch (event.type) {
+    case 'metamemory_event':
+      memoryProcessor.processEvent(event);
+      break;
+    case 'metacognition_event':
+      cognitionProcessor.processEvent(event);
+      break;
+    default:
+      taskProcessor.processEvent(event);
+  }
+};
+
+// Had to pass individual data
+<Conversation messages={taskProcessor.messages} />
+<MemoryView data={memoryProcessor.data} />
+```
+
+After:
+```typescript
+const { state, processEvent } = useTaskState();
+
+// Automatic routing and unified state
+<Conversation taskState={state} />
+<MemoryView data={state.memoryData} />
 ```
 
 ### From Custom State Management
@@ -518,11 +602,13 @@ imageGallery.processEvent(event);
 />
 ```
 
-## Examples Repository
+## Integration Patterns
 
-For complete working examples, see:
-- `/demo-ui/src/examples/taskEventProcessorExample.tsx` - Basic integration
-- `/ensemble/demo/` - Request demo with streaming
-- `/task/demo/` - Full task runner with all event types
+The library provides several integration patterns:
 
-Each example demonstrates different integration patterns and use cases.
+1. **Direct WebSocket Integration**: Process raw WebSocket events using `processEvent`
+2. **Hook-based State Management**: Use `useTaskState` for automatic state management
+3. **Custom Event Processors**: Extend functionality with custom event handlers
+4. **Memory and Cognition Integration**: Built-in support for meta-events
+
+For implementation details, refer to the source code and type definitions included with the package.

@@ -18,4 +18,9 @@ export interface TaskState {
     
     // Metacognition  
     cognitionData: MetaCognitionEventData;
+    
+    // Loading state
+    isLoading: boolean;
+    runningTasks: Map<string, { taskId: string; startTime: Date }>;
+    runningRequests: Map<string, { requestId: string; startTime: Date }>;
 }

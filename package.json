@@ -6,11 +6,13 @@
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "browser": "dist/browser.esm.js",
   "exports": {
     ".": {
       "import": "./dist/index.esm.js",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser.esm.js"
     },
     "./dist/styles.css": "./dist/styles.css"
   },
@@ -23,8 +25,7 @@
     "dev": "rollup -c -w",
     "test": "vitest",
     "lint": "eslint src --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/postinstall.js"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -32,11 +33,12 @@
     "ws": "^8.0.0"
   },
   "dependencies": {
-    "@just-every/ensemble": "^0.2.131",
-    "@just-every/task": "file:../task",
+    "@just-every/ensemble": "^0.2.140",
+    "@just-every/task": "^0.2.31",
     "dompurify": "^3.0.0",
     "isomorphic-dompurify": "^2.0.0",
-    "marked": "^9.0.0"
+    "marked": "^9.0.0",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
@@ -50,7 +52,7 @@
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "rollup": "^4.0.0",
-    "rollup-plugin-postcss": "^4.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-typescript2": "^0.36.0",
     "sass": "^1.89.2",
     "typescript": "^5.0.0",

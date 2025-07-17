@@ -1,6 +1,30 @@
 import type { EnsembleLogger } from '@just-every/ensemble';
 import type { WebSocket } from 'ws';
 
+// Local implementation of truncateLargeValues to avoid Node.js dependencies
+function truncateLargeValues(obj: unknown, maxLength: number = 1000): unknown {
+    if (typeof obj === 'string') {
+        if (obj.startsWith('data:image/') && obj.length > maxLength) {
+            return `${obj.substring(0, 100)}...[truncated ${obj.length} chars]`;
+        }
+        return obj.length > maxLength ? obj.substring(0, maxLength) + '...' : obj;
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => truncateLargeValues(item, maxLength));
+    }
+    
+    if (obj && typeof obj === 'object') {
+        const result: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(obj)) {
+            result[key] = truncateLargeValues(value, maxLength);
+        }
+        return result;
+    }
+    
+    return obj;
+}
+
 export interface LLMRequestData {
     requestId: string;
     agentId: string;
@@ -56,7 +80,7 @@ export class RequestDemoLogger implements EnsembleLogger {
             providerName,
             model,
             timestamp: time,
-            requestData,
+            requestData: truncateLargeValues(requestData),
             status: 'running',
             tags,
         };
@@ -85,7 +109,7 @@ export class RequestDemoLogger implements EnsembleLogger {
         
         const llmRequest = this.llmRequests.get(requestId);
         if (llmRequest) {
-            llmRequest.responseData = responseData;
+            llmRequest.responseData = truncateLargeValues(responseData);
             llmRequest.status = 'complete';
             llmRequest.duration = (timestamp || new Date()).getTime() - llmRequest.timestamp.getTime();
             
@@ -110,7 +134,7 @@ export class RequestDemoLogger implements EnsembleLogger {
         
         const llmRequest = this.llmRequests.get(requestId);
         if (llmRequest) {
-            llmRequest.errorData = errorData;
+            llmRequest.errorData = truncateLargeValues(errorData);
             llmRequest.status = 'error';
             llmRequest.duration = (timestamp || new Date()).getTime() - llmRequest.timestamp.getTime();
             

@@ -18,6 +18,11 @@ export interface TaskState {
     memoryData: MetaMemoryEventData;
     cognitionData: MetaCognitionEventData;
     
+    // Loading state
+    isLoading: boolean;
+    runningTasks: Map<string, { taskId: string; startTime: Date }>;
+    runningRequests: Map<string, { requestId: string; startTime: Date }>;
+    
     // Task processor for direct access when needed
     taskProcessor: TaskEventProcessor;
 }
@@ -63,6 +68,9 @@ export function useTaskState(options?: UseTaskStateOptions) {
                 averageProcessingTime: 0
             }
         },
+        isLoading: false,
+        runningTasks: new Map(),
+        runningRequests: new Map(),
         taskProcessor: null as any // Will be set in useEffect
     }));
 

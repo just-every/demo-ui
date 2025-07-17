@@ -282,6 +282,8 @@ body::before {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    display: flex;
+    gap: 12px;
 }
 
 .glass-button::before {
@@ -315,14 +317,10 @@ body::before {
 
 .glass-button.primary {
     background: var(--accent-primary);
-    border: none;
+    border-color: var(--accent-primary);
     color: white;
-    padding: 10px 24px;
     font-weight: 600;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .glass-button.primary::before {
@@ -372,13 +370,9 @@ body::before {
 
 .glass-button.danger {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
-    border: 1px solid var(--accent-error);
+    border-color: var(--accent-error);
     color: var(--accent-error);
-    padding: 10px 24px;
     font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .glass-button.danger::before {
@@ -1302,7 +1296,7 @@ a.glass-card {
 
 /* Code Modal Styles */
 .modal-content {
-    padding: 20px;
+    height: 100%;
 }
 
 .tabs {
@@ -1391,11 +1385,13 @@ a.glass-card {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
 }
 
 .modal-overlay.active {
@@ -1415,6 +1411,37 @@ a.glass-card {
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     display: flex;
     flex-direction: column;
+}
+
+.modal-content {
+    position: relative;
+    background: transparent;
+    padding: 0;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.modal-content.markdown-modal {
+    border-radius: 16px;
+    padding: 32px;
+    overflow-y: auto;
+    background: #263349;
+    background: linear-gradient(135deg, rgb(74 158 255 / 40%) 0, transparent 100%), radial-gradient(circle at 80% 80%, rgba(124, 58, 237, .3) 0, transparent 50%), linear-gradient(191deg, rgba(16, 185, 129, .2) 0, transparent 50%), linear-gradient(209deg, var(--bg-primary) 0, var(--bg-secondary) 100%);
+}
+
+.modal-content.image-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+}
+
+.modal-content.image-modal img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .modal-tabs-section {
@@ -1437,19 +1464,28 @@ a.glass-card {
 }
 
 .modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    color: var(--text-secondary);
-    padding: 4px;
-    border-radius: 4px;
+    color: rgba(0, 0, 0, 0.85);
+    padding: 0;
+    border-radius: 50%;
     transition: all 0.2s;
+    z-index: 10;
 }
 
 .modal-close:hover {
-    background: var(--surface-glass-hover);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+    color: rgba(0, 0, 0, 1);
 }
 
 .modal-body {
@@ -1501,6 +1537,7 @@ a.glass-card {
     margin: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
+    word-break: break-all;
 }
 
 .copy-button {
@@ -2080,10 +2117,10 @@ select:focus {
     border: 1px solid var(--border-glass);
     border-radius: 12px;
     font-size: 15px;
-    min-width: 320px;
     color: var(--text);
     transition: all 0.3s ease;
     font-weight: 500;
+    max-width: 100%;
 }
 
 .model-select:focus {
@@ -2101,8 +2138,7 @@ select:focus {
 .message {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 16px 0;
+    gap: 3px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -2119,6 +2155,7 @@ select:focus {
     gap: 12px;
     align-items: flex-start;
     max-width: 100%;
+    width: 100%;
 }
 
 .message.user .message-row {
@@ -2131,8 +2168,9 @@ select:focus {
     justify-content: space-between;
     gap: 8px;
     font-size: 12px;
-    color: var(--text-secondary);
-    padding: 0 50px;
+    color: hsl(0deg 0% 100% / 30%);
+    max-width: 100%;
+    padding-left: 49px;
 }
 
 .message-details {
@@ -2144,6 +2182,8 @@ select:focus {
 
 .message.user .message-metadata {
     flex-direction: row-reverse;
+    padding-left: 0;
+    padding-right: 48px; /* 36px avatar + 12px gap */
 }
 
 .message.user .message-details {
@@ -2244,11 +2284,27 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    user-select: none;
+
+    &:hover {
+        opacity: 0.8;
+    }
 
     &.expanded {
-        padding: 4px 0 13px;
-        border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+        padding: 0px 0px 13px;
+        border-bottom: 1px solid hsla(0, 0%, 100%, .05);
     }
+}
+
+.expandable-content {
+    will-change: max-height;
+}
+
+.expand-icon {
+    display: inline-block;
+    font-size: 12px;
 }
 
 .message-prefix {
@@ -2265,9 +2321,11 @@ select:focus {
     border-radius: 50%;
     font-weight: 600;
     color: white;
+    background: none !important;
+    backdrop-filter: none !important;
 
     svg {
-        fill: hsl(0deg 0% 100% / 20%);
+        fill: hsl(0deg 0% 100% / 10%);
         max-width: 40%;
         max-height: 40%;
     }
@@ -2281,10 +2339,16 @@ select:focus {
     background: var(--accent-secondary);
 }
 
+.message-content-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .message-content {
     flex: 1;
     min-width: 0;
-    max-width: 80%;
 
    .glass {
         background: rgba(16, 185, 129, 0.05);
@@ -2440,26 +2504,49 @@ select:focus {
 
 /* Tool call styles */
 .tool-calls {
-    margin-top: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
 }
 
-.tool-call {
-    background: var(--surface-glass);
-    border: 1px solid var(--border-glass);
+.tool-call, .tool-result {
     border-radius: 8px;
-    padding: 12px;
     font-size: 14px;
+    padding: 10px;
 
     pre {
         white-space: pre-wrap;
     }
 
     .tool-arguments {
-        margin-bottom: 1rem;
+        color: #ababab;
+
+        strong {
+            font-weight: 400;;
+        }
     }
+}
+
+.tool-result {
+    border-top: 1px solid hsla(0, 0%, 100%, .05);
+
+    ol, ul {
+        max-width: 100%;
+        word-wrap: break-word;
+        word-break: break-all;
+
+        li {
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+    }
+    p {
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+}
+.tool-call + .tool-result {
+    padding-top: 20px;
+    margin-top: 1rem;
 }
 
 .tool-call-header {
@@ -2522,21 +2609,19 @@ select:focus {
     height: 100%;
     display: flex;
     flex-direction: column;
+    padding: 0px 3%;
 }
 
 .conversation-container {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
-}
-
-.conversation-container.with-graph {
-    padding: 16px 16px 16px 0;
+    padding: 30px 0;
 }
 
 .conversation-wrapper {
     display: flex;
     min-height: 100%;
+    padding: 20px 0;
 }
 
 .memory-tag-graph-wrapper {
@@ -2604,10 +2689,6 @@ select:focus {
     flex-direction: column;
     gap: 16px;
     padding-left: 0;
-}
-
-.conversation-container.with-graph .messages {
-    padding-left: 8px;
 }
 
 /* Thread styles */
@@ -2679,6 +2760,45 @@ select:focus {
     color: var(--text-secondary);
     padding: 40px 20px;
     font-size: 14px;
+}
+
+/* Loading indicator */
+.loading-indicator {
+    display: flex;
+    padding: 30px 50px;
+}
+
+.loading-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.loading-dots .dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-tertiary);
+    border-radius: 50%;
+    animation: loading-pulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots .dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.loading-dots .dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes loading-pulse {
+    0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Typing indicator */
@@ -2880,12 +3000,6 @@ select:focus {
     gap: 8px; /* Reduced gap for closer integration */
 }
 
-.memory-tag-graph-wrapper {
-    position: sticky;
-    top: 0;
-    align-self: start;
-}
-
 /* Animations */
 .tag-introduction, .tagged-message {
     animation: fadeIn 300ms ease-in;
@@ -2908,6 +3022,117 @@ select:focus {
     position: relative;
 }
 
+/* Branch spacing for visual separation */
+.tag-introduction {
+    margin-top: 50px;
+    padding: 0px 4px 0px;
+    background: none;
+    border: none;
+    cursor: default;
+}
+
+.tag-header {
+    transition: opacity 0.2s ease;
+    
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.tag-description {
+    color: hsla(0, 0%, 100%, .3);
+    font-size: 12px;
+    margin: 4px 0 0;
+    line-height: 1.3;
+    animation: fadeIn 0.3s ease;
+}
+
+.tag-introduction:first-child {
+    margin-top: 0; /* No extra spacing for the very first tag */
+}
+
+.message.branch-end {
+    margin-bottom: 10px;
+}
+
+.message.branch-end:last-child {
+    margin-bottom: 0; /* No extra spacing after the very last message */
+}
+
+/* Message Images */
+.message-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.transparent-grid-bg, .transparent-grid-bg-small, .transparent-grid-bg-large {
+    background: #ffffff;
+    background: conic-gradient(#ffffff 90deg, #f0f0f0 90deg 180deg, #ffffff 180deg 270deg, #f0f0f0 270deg);
+    background-repeat: repeat;
+    background-size: 40px 40px;
+    background-position: top left;
+}
+.transparent-grid-bg-small {
+    background-size: 17px 17px;
+}
+.transparent-grid-bg-large {
+    background-size: 70px 70px;
+}
+
+.message-image-container {
+    border: 1px solid var(--border-glass);
+    border-radius: 8px;
+    cursor: pointer;
+    height: 140px;
+    overflow: hidden;
+    transition: all .2s ease;
+    width: 200px;
+    
+    &:hover {
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* No Content Component */
+.no-content {
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 200px;
+    padding: 20px;
+}
+
+.message-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.2s ease;
+    
+    .message-image-container:hover & {
+        transform: scale(1.05);
+    }
+}
+
+.image-modal-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    
+    img {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+}
+
 /* Removed ::before */
 
 /* Media Queries */
@@ -2926,4 +3151,23 @@ select:focus {
     border-radius: 12px; /* Ensure consistent rounding */
     background: rgba(var(--color), 0.03); /* Lighter background */
     backdrop-filter: blur(8px); /* Slightly less blur if overwhelming */
+}
+
+.float {
+    animation: floatAnimation 3s ease-in-out infinite;
+}
+
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.message-body {
+    a {
+        color: #fff;
+    }
 }

@@ -3,10 +3,17 @@ import React from 'react';
 import { MessageAvatar } from './MessageAvatar';
 import { MessageContent } from './MessageContent';
 import { MessageMetadata } from './MessageMetadata';
+import { MessageImages } from './MessageImages';
+import { MarkdownViewer } from './MarkdownViewer';
 import { ToolCallData } from './ToolCall';
 import type { ResponseOutputEvent, ResponseInputItem } from '@just-every/ensemble';
 import './style.scss';
 import type { RequestAgent } from '../utils/taskEventProcessor';
+
+export interface UrlMapping {
+    localPath: string;
+    publicUrl: string;
+}
 
 export interface MessageData {
     id?: string;  // Unique message ID
@@ -18,6 +25,7 @@ export interface MessageData {
     model?: string;
     modelClass?: string;
     tools?: ToolCallData[];
+    toolResult?: MessageData;  // Result of the tool call
     streaming?: boolean;
     timestamp?: number | Date;
     // RequestAgent fields
@@ -113,7 +121,6 @@ export function convertResponseOutputEventToMessageData(
                 arguments: funcCall.arguments || ''
             }
         }];
-        content = `${funcCall.name}`;
     } else if (message.type === 'function_call_output') {
         // Tool result message
         const funcResult = message as any;
@@ -150,13 +157,39 @@ export interface MessageProps {
     message: MessageData;
     className?: string;
     isCompact?: boolean;
+    urlMappings?: UrlMapping[];
 }
 
 export const Message: React.FC<MessageProps> = ({
     message,
     className = '',
-    isCompact = false
+    isCompact = false,
+    urlMappings = []
 }) => {
+    // Extract .md file paths from the content
+    const extractMarkdownPaths = (content: string): string[] => {
+        // Don't try to extract paths if the content looks like it contains HTML or markdown content
+        if (content.includes('<!DOCTYPE') || content.includes('<html') || content.includes('```')) {
+            return [];
+        }
+        
+        const mdFileRegex = /(?:^|\s)([\w\-\.\/@]+\.md)(?:\s|$)/gm;
+        const matches = [];
+        let match;
+        
+        while ((match = mdFileRegex.exec(content)) !== null) {
+            const path = match[1];
+            // Only include paths that look like valid file paths
+            if (path.includes('/') || path.match(/^[\w\-]+\.md$/)) {
+                matches.push(path);
+            }
+        }
+        
+        return [...new Set(matches)]; // Remove duplicates
+    };
+    
+    const fullContent = message.content + (message.thinking_content || '') + (message.toolResult?.content || '');
+    const markdownPaths = extractMarkdownPaths(fullContent);
     
     return (
         <div className={`message ${message.role} ${isCompact ? 'compact' : ''} ${className}`}>
@@ -169,7 +202,14 @@ export const Message: React.FC<MessageProps> = ({
                     size={36}
                 />
 
-                <MessageContent message={message} />
+                <div className="message-content-wrapper">
+                    <MessageContent message={message} />
+                    <MessageImages 
+                        content={fullContent} 
+                        urlMappings={urlMappings} 
+                    />
+                    <MarkdownViewer filePaths={markdownPaths} urlMappings={urlMappings} />
+                </div>
             </div>
         </div>
     );

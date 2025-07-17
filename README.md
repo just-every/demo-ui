@@ -30,15 +30,12 @@ import { Conversation, useTaskState } from '@just-every/demo-ui';
 import '@just-every/demo-ui/dist/styles.css';
 
 function ChatApp() {
-  const taskState = useTaskState({
-    taskId: 'chat-session',
-    agentName: 'assistant'
-  });
+  const { state, processEvent, addUserMessage } = useTaskState();
 
   return (
     <Conversation
-      taskState={taskState}
-      isStreaming={taskState.isStreaming}
+      taskState={state}
+      isLoading={state.isLoading}
     />
   );
 }
@@ -50,21 +47,17 @@ function ChatApp() {
 import { Conversation, MemoryView, useTaskState } from '@just-every/demo-ui';
 
 function ChatWithMemory() {
-  const taskState = useTaskState({
-    taskId: 'chat-session',
-    enableMetaMemory: true,
-    enableMetaCognition: true
-  });
+  const { state, processEvent } = useTaskState();
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       <Conversation
-        taskState={taskState}
-        isStreaming={taskState.isStreaming}
+        taskState={state}
+        isLoading={state.isLoading}
         className="chat-main"
       />
       <MemoryView
-        memoryData={taskState.memoryData}
+        memoryData={state.memoryData}
         className="memory-sidebar"
       />
     </div>
@@ -81,7 +74,7 @@ The main conversation component with integrated memory tag visualization.
 ```tsx
 interface ConversationProps {
   taskState: TaskState;
-  isStreaming?: boolean;
+  isLoading?: boolean;
   isCompact?: boolean;
   emptyMessage?: string;
   className?: string;
@@ -89,6 +82,7 @@ interface ConversationProps {
   messageClassName?: string;
   autoScroll?: boolean;
   maxHeight?: string;
+  urlMappings?: UrlMapping[];
 }
 ```
 
@@ -256,12 +250,104 @@ const customProcessor = (event: ResponseOutputEvent) => {
 };
 ```
 
+## Additional Components
+
+### `<Header />`
+
+A customizable header component with tab navigation support.
+
+```tsx
+interface HeaderTab {
+  id: string;
+  label: string;
+  count?: number;
+}
+
+<Header 
+  tabs={tabs}
+  activeTab={activeTab}
+  onTabChange={setActiveTab}
+  className="custom-header"
+/>
+```
+
+### `<CostView />`
+
+Displays cost tracking information for LLM usage.
+
+```tsx
+<CostView 
+  costHistory={costHistory}
+  costByModel={costByModel}
+  totalCost={totalCost}
+/>
+```
+
+### `<MarkdownViewer />`
+
+Renders markdown content with support for syntax highlighting and file expansion.
+
+```tsx
+<MarkdownViewer 
+  filePath="/path/to/file.md"
+  onFileExpand={handleFileExpand}
+/>
+```
+
+### `<MessageImages />`
+
+Extracts and displays images from message content with lightbox support.
+
+```tsx
+<MessageImages 
+  content={messageContent}
+  urlMappings={urlMappings}
+/>
+```
+
+## Hooks
+
+### `useTaskState`
+
+The main hook for managing conversation state and WebSocket events.
+
+```tsx
+const { state, processEvent, reset, addUserMessage } = useTaskState(options);
+
+// state includes:
+interface TaskState {
+  llmRequests: LLMRequestData[];
+  messages: ResponseOutputEvent[];
+  requestAgents: Map<string, any>;
+  totalCost: number;
+  totalTokens: number;
+  memoryData: MetaMemoryEventData;
+  cognitionData: MetaCognitionEventData;
+  isLoading: boolean;
+  runningTasks: Map<string, { taskId: string; startTime: Date }>;
+  runningRequests: Map<string, { requestId: string; startTime: Date }>;
+}
+```
+
+## Streaming Events
+
+The library now supports real-time streaming of messages through WebSocket events:
+
+- **message_start**: Begins a new message stream
+- **message_delta**: Adds content chunks to the message
+- **tool_start**: Begins a tool call
+- **tool_delta**: Updates tool arguments during execution
+- **response_output**: Final complete message
+
+Messages appear immediately when streaming starts and update in real-time as content arrives.
+
 ## Browser Support
 
 - Chrome/Edge: Full support
 - Firefox: Full support
 - Safari: Full support (iOS 14+)
 - Mobile: Responsive design for all screen sizes
+- WebSocket: Required for real-time features
 
 ## Contributing
 

@@ -14,7 +14,10 @@ export function useTaskEventProcessor(options?: UseTaskEventProcessorOptions) {
         messages: [],
         requestAgents: new Map(),
         totalCost: 0,
-        totalTokens: 0
+        totalTokens: 0,
+        isLoading: false,
+        runningTasks: new Map(),
+        runningRequests: new Map()
     });
 
     // Initialize processor
@@ -74,7 +77,10 @@ export function useTaskEventProcessor(options?: UseTaskEventProcessorOptions) {
             messages: [],
             requestAgents: new Map(),
             totalCost: 0,
-            totalTokens: 0
+            totalTokens: 0,
+            isLoading: false,
+            runningTasks: new Map(),
+            runningRequests: new Map()
         };
         
         setProcessedData(emptyData);
@@ -97,6 +103,9 @@ export function useTaskEventProcessor(options?: UseTaskEventProcessorOptions) {
         requestAgents: processedData.requestAgents,
         totalCost: processedData.totalCost,
         totalTokens: processedData.totalTokens,
+        isLoading: processedData.isLoading,
+        runningTasks: processedData.runningTasks,
+        runningRequests: processedData.runningRequests,
         processedData
     };
 }

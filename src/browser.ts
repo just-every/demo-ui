@@ -1,3 +1,4 @@
+// Browser-safe exports only - excludes server-side utilities
 // Core UI Components
 export { GlassButton } from './components/GlassButton';
 export { GlassCard } from './components/GlassCard';
@@ -9,10 +10,6 @@ export { Modal } from './components/Modal';
 export { default as DemoHeader } from './components/DemoHeader';
 export { Header, type HeaderProps, type HeaderTab } from './components/Header';
 export { default as LLMRequestLog } from './components/LLMRequestLog';
-export type { LLMRequestData } from './utils/llmLogger';
-export { RequestDemoLogger, enableRequestDemoLogger } from './utils/llmLogger';
-export { CostDemoLogger, enableCostDemoLogger } from './utils/costLogger';
-export type { CostData } from './utils/costLogger';
 export { CostView } from './components/CostView';
 export type { CostViewProps } from './components/CostView';
 
@@ -103,34 +100,9 @@ export {
 } from './hooks/useCustomEventProcessor';
 export { useTaskState, type TaskState } from './hooks/useTaskState';
 
-// Utilities
+// Utilities (browser-safe only)
 export * from './utils/formatters';
 export * from './utils/codeGenerators';
-export { TaskEventProcessor, createTaskEventProcessor, type ProcessedEventData } from './utils/taskEventProcessor';
-export { 
-    MetaMemoryEventProcessor, 
-    createMetaMemoryEventProcessor, 
-    type MetaMemoryEventData,
-    type MemoryTaggingEvent,
-    type MetaMemoryStats
-} from './utils/metaMemoryEventProcessor';
-export { 
-    MetaCognitionEventProcessor, 
-    createMetaCognitionEventProcessor,
-    type MetaCognitionEventData,
-    type CognitionAnalysisEvent,
-    type MetaCognitionStats
-} from './utils/metaCognitionEventProcessor';
-export { 
-    CustomEventProcessor,
-    createCustomEventProcessor,
-    createImageEventProcessor,
-    createDesignIterationProcessor,
-    type CustomEvent,
-    type CustomEventProcessorOptions,
-    type ImageData,
-    type DesignIterationData
-} from './utils/customEventProcessor';
 
 // Import styles
 import './components/style.scss';

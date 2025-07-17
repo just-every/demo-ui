@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LLMRequestData } from '../utils/llmLogger'
 import type { TaskState } from '../hooks/useTaskState'
 import { formatDuration } from '../utils/formatters'
+import { NoContent } from './NoContent'
 import './LLMRequestLog.scss'
 
 // Support both old interface and new taskState interface
@@ -14,6 +15,12 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
   // Use taskState.llmRequests if available, otherwise fall back to requests prop
   const requests = taskState?.llmRequests || requestsProp || []
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'stats' | 'request' | 'response' | 'error'>('stats')
+
+  // Reset active tab when a new request is selected
+  useEffect(() => {
+    setActiveTab('stats')
+  }, [selectedRequest])
 
   const getRequestPreview = (request: any) => {
     if (request?.messages && Array.isArray(request.messages)) {
@@ -51,9 +58,14 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
 
   const getStatusBadge = (status: string) => {
     const className = `status-badge ${status}`
-    return <span className={className}>{status}</span>
+    // Display ERROR in all caps for error status, otherwise use the status as-is but uppercase
+    const displayText = status.toUpperCase()
+    return <span className={className}>{displayText}</span>
   }
 
+  if(requests.length === 0) {
+    return <NoContent message="No requests yet." />
+  }
   return (
     <div className="llm-request-log">
       <div className="request-list">
@@ -92,18 +104,12 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
             </div>
           </div>
         ))}
-        
-        {requests.length === 0 && (
-          <div className="empty-state">
-            No LLM requests yet
-          </div>
-        )}
       </div>
 
       {selectedRequestData && (
         <div className="request-details">
           <div className="details-header">
-            <h3>Request Details - {selectedRequestData.requestId}</h3>
+            <h3>Request Details</h3>
             <button 
               className="close-button"
               onClick={() => setSelectedRequest(null)}
@@ -112,63 +118,93 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
             </button>
           </div>
           
+          <div className="details-tabs">
+            <button 
+              className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              Stats
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'request' ? 'active' : ''}`}
+              onClick={() => setActiveTab('request')}
+            >
+              Request
+            </button>
+            {!!selectedRequestData.responseData && (
+              <button 
+                className={`tab-button ${activeTab === 'response' ? 'active' : ''}`}
+                onClick={() => setActiveTab('response')}
+              >
+                Response
+              </button>
+            )}
+            {!!selectedRequestData.errorData && (
+              <button 
+                className={`tab-button ${activeTab === 'error' ? 'active' : ''}`}
+                onClick={() => setActiveTab('error')}
+              >
+                Error
+              </button>
+            )}
+          </div>
+          
           <div className="details-content">
-            
-            {selectedRequestData.errorData ? (
-              <div className="detail-section">
-                <h4>Error Details</h4>
-                <pre className="response-content error">
-                  {typeof selectedRequestData.errorData === 'string' 
-                    ? selectedRequestData.errorData 
-                    : JSON.stringify(selectedRequestData.errorData, null, 2)}
+            {activeTab === 'stats' && (
+              <div className="tab-content">
+                <div className="metadata-grid">
+                  <div><strong>Request ID:</strong> {selectedRequestData.requestId}</div>
+                  <div><strong>Agent ID:</strong> {selectedRequestData.agentId}</div>
+                  <div><strong>Provider:</strong> {selectedRequestData.providerName}</div>
+                  <div><strong>Model:</strong> {selectedRequestData.model}</div>
+                  <div><strong>Status:</strong> {getStatusBadge(selectedRequestData.status)}</div>
+                  <div><strong>Timestamp:</strong> {selectedRequestData.timestamp.toLocaleString()}</div>
+                  {selectedRequestData.duration !== undefined && (
+                    <div><strong>Duration:</strong> {formatDuration(selectedRequestData.duration)}</div>
+                  )}
+                  {selectedRequestData.tags && selectedRequestData.tags.length > 0 && (
+                    <div className="metadata-tags">
+                      <strong>Tags:</strong>
+                      <div className="request-tags">
+                        {selectedRequestData.tags.map((tag: string, index: number) => (
+                          <span key={tag} className="request-tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'request' && (
+              <div className="tab-content">
+                <pre className="response-content">
+                  {JSON.stringify(selectedRequestData.requestData, null, 2)}
                 </pre>
               </div>
-            ) : null}
+            )}
 
-            {selectedRequestData.responseData ? (
-              <div className="detail-section">
-                <h4>Full Response</h4>
+            {activeTab === 'response' && !!selectedRequestData.responseData && (
+              <div className="tab-content">
                 <pre className="response-content">
                   {typeof selectedRequestData.responseData === 'string' 
                     ? selectedRequestData.responseData 
                     : JSON.stringify(selectedRequestData.responseData, null, 2)}
                 </pre>
               </div>
-            ) : null}
+            )}
 
-            <div className="detail-section">
-              <h4>Full Request Payload</h4>
-              <pre className="response-content">
-                {JSON.stringify(selectedRequestData.requestData, null, 2)}
-              </pre>
-            </div>
-            
-            <div className="detail-section">
-              <h4>Request Metadata</h4>
-              <div className="metadata-grid">
-                <div><strong>Agent ID:</strong> {selectedRequestData.agentId}</div>
-                <div><strong>Provider:</strong> {selectedRequestData.providerName}</div>
-                <div><strong>Model:</strong> {selectedRequestData.model}</div>
-                <div><strong>Status:</strong> {getStatusBadge(selectedRequestData.status)}</div>
-                <div><strong>Timestamp:</strong> {selectedRequestData.timestamp.toLocaleString()}</div>
-                {selectedRequestData.duration !== undefined && (
-                  <div><strong>Duration:</strong> {formatDuration(selectedRequestData.duration)}</div>
-                )}
-                {selectedRequestData.tags && selectedRequestData.tags.length > 0 && (
-                  <div className="metadata-tags">
-                    <strong>Tags:</strong>
-                    <div className="request-tags">
-                      {selectedRequestData.tags.map((tag: string, index: number) => (
-                        <span key={tag} className="request-tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            {activeTab === 'error' && !!selectedRequestData.errorData && (
+              <div className="tab-content">
+                <pre className="response-content error">
+                  {typeof selectedRequestData.errorData === 'string' 
+                    ? selectedRequestData.errorData 
+                    : JSON.stringify(selectedRequestData.errorData, null, 2)}
+                </pre>
               </div>
-            </div>
-
+            )}
           </div>
         </div>
       )}

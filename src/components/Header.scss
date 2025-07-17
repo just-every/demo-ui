@@ -1,0 +1,44 @@
+.header-navigation {
+    background: transparent;
+    border-bottom: 1px solid hsla(0, 0%, 100%, .1);
+    position: relative;
+    width: 100%;
+}
+
+.header-tabs {
+    align-items: center;
+    display: flex;
+    padding: 14px 21px;
+    backdrop-filter: var(--blur-glass);
+}
+
+.header-tab {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 400;
+    gap: 6px;
+    line-height: 22px;
+    outline: none;
+    position: relative;
+    transition: color .2s ease;
+    padding: 5px 20px 10px;
+    border-radius: 0;
+    border-bottom: 1px solid transparent;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &.active {
+    color: #ffffff;
+    border-bottom: 1px solid #4a9eff;
+  }
+
+  .header-tab-count {
+    opacity: 0.5;
+  }
+}

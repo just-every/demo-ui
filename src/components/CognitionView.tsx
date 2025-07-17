@@ -5,6 +5,7 @@ import type { TaskState } from '../hooks/useTaskState';
 import { formatDuration } from '../utils/formatters';
 import './style.scss';
 import './CognitionView.scss';
+import { NoContent } from './NoContent';
 
 export interface CognitionViewProps {
     taskState: TaskState;
@@ -112,7 +113,7 @@ export const CognitionView: React.FC<CognitionViewProps> = ({
     return (
         <div className={`cognition-view ${className}`}>
             <div className="cognition-header">
-                <h3>Metacognition Analysis</h3>
+                <h3>Meta-Cognition</h3>
                 <div className="stats-summary">
                     <div className="stat-item">
                         <span className="stat-value">{taskState.cognitionData.stats.totalAnalyses}</span>
@@ -157,34 +158,29 @@ export const CognitionView: React.FC<CognitionViewProps> = ({
             </div>
 
             <div className="cognition-content">
-                {activeTab === 'events' && (
-                    <div className="analysis-events-section">
-                        {taskState.cognitionData.analysisEvents.length > 0 ? (
+                {activeTab === 'events' && (<>
+                    {taskState.cognitionData.analysisEvents.length > 0 ? (
+                        <div className="analysis-events-section">
                             <div className="events-list">
                                 {taskState.cognitionData.analysisEvents
                                     .sort((a, b) => b.startedAt - a.startedAt)
                                     .map(renderAnalysisEvent)}
                             </div>
-                        ) : (
-                            <div className="empty-state">
-                                <div className="empty-icon">🔮</div>
-                                <p>No metacognition activity yet</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    ) : (
+                        <NoContent message="No cognition activity yet." />
+                    )}
+                </>)}
 
-                {activeTab === 'state' && (
-                    <div className="state-section">
-                        {taskState.cognitionData.currentState ? (
-                            renderState(taskState.cognitionData.currentState)
-                        ) : (
-                            <div className="empty-state">
-                                <p>No state data available</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {activeTab === 'state' && (<>
+                    {taskState.cognitionData.currentState ? (
+                        <div className="state-section">
+                            {renderState(taskState.cognitionData.currentState)}
+                        </div>
+                    ) : (
+                        <NoContent message="No cognition state yet." />
+                    )}
+                </>)}
             </div>
         </div>
     );

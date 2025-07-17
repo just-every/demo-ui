@@ -5,7 +5,6 @@ import {
     CustomEventProcessorOptions,
     createCustomEventProcessor 
 } from '../utils/customEventProcessor';
-import { useTaskEventProcessors } from './useMetaEventProcessors';
 
 export interface UseCustomEventProcessorReturn<T> {
     processEvent: (event: CustomEvent) => void;
@@ -173,41 +172,4 @@ export function useDesignIterations() {
             }
         }
     });
-}
-
-/**
- * Combined hook for all task event processors including custom ones
- */
-export function useTaskEventProcessorsWithCustom<T extends Record<string, any>>(
-    customConfigs?: Record<string, CustomEventProcessorOptions>
-) {
-    // Import the base task event processors
-    const baseProcessors = useTaskEventProcessors();
-    
-    // Create custom processors if provided
-    const customProcessors = customConfigs 
-        ? useMultipleCustomEventProcessors(customConfigs)
-        : null;
-
-    const processEvent = useCallback((event: any) => {
-        // First try base processors
-        baseProcessors.processEvent(event);
-        
-        // Then try custom processors
-        if (customProcessors && event.type && customConfigs?.[event.type]) {
-            customProcessors.processEvent(event);
-        }
-    }, [baseProcessors, customProcessors, customConfigs]);
-
-    const reset = useCallback(() => {
-        baseProcessors.reset();
-        customProcessors?.reset();
-    }, [baseProcessors, customProcessors]);
-
-    return {
-        ...baseProcessors,
-        customProcessors: customProcessors?.processors,
-        processEvent,
-        reset
-    };
 }

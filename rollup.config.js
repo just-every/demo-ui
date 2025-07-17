@@ -4,9 +4,11 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
-export default {
-    input: 'src/index.ts',
-    output: [
+export default [
+    // Full build (with server-side utilities)
+    {
+        input: 'src/index.ts',
+        output: [
         {
             dir: 'dist',
             entryFileNames: '[name].js',
@@ -27,8 +29,9 @@ export default {
         'dompurify',
         'isomorphic-dompurify',
         'ws',
+        // Externalize Node.js modules that aren't needed in browser
         'fs',
-        'fs/promises',
+        'fs/promises', 
         'path',
         'buffer',
         'events',
@@ -57,7 +60,64 @@ export default {
             extensions: ['.css', '.scss'],
             extract: 'styles.css',
             minimize: true,
-            use: ['sass'],
+            use: [
+                ['sass', {
+                    api: 'modern',
+                    silenceDeprecations: ['legacy-js-api']
+                }]
+            ],
         }),
     ],
-};
+},
+    // Browser build (without server-side utilities)
+    {
+        input: 'src/browser.ts',
+        output: [
+            {
+                dir: 'dist',
+                entryFileNames: '[name].js',
+                format: 'cjs',
+                sourcemap: true,
+            },
+            {
+                dir: 'dist',
+                entryFileNames: '[name].esm.js',
+                format: 'esm',
+                sourcemap: true,
+            },
+        ],
+        external: [
+            'react',
+            'react-dom',
+            'marked',
+            'dompurify',
+            'isomorphic-dompurify',
+            '@just-every/ensemble',
+            '@just-every/task',
+            'ws',
+        ],
+        plugins: [
+            nodeResolve({
+                preferBuiltins: false,
+                browser: true,
+            }),
+            commonjs(),
+            json(),
+            typescript({
+                tsconfig: './tsconfig.json',
+                clean: false,
+            }),
+            postcss({
+                extensions: ['.css', '.scss'],
+                extract: false,
+                inject: false,
+                use: [
+                    ['sass', {
+                        api: 'modern',
+                        silenceDeprecations: ['legacy-js-api']
+                    }]
+                ],
+            }),
+        ],
+    }
+];

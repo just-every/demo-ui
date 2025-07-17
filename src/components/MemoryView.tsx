@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MetaMemoryEventData, MemoryTaggingEvent } from '../utils/metaMemoryEventProcessor';
+import { MemoryTaggingEvent } from '../utils/metaMemoryEventProcessor';
 import type { TopicTagMetadata, MessageMetadata } from '@just-every/task';
 import type { TaskState } from '../hooks/useTaskState';
 import { formatDuration } from '../utils/formatters';
 import './style.scss';
 import './MemoryView.scss';
 import './MemoryView.compaction.scss';
+import { NoContent } from './NoContent';
 
 export interface MemoryViewProps {
     taskState: TaskState;
@@ -393,12 +394,8 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
     return (
         <div className={`memory-view ${className}`}>
             <div className="memory-header">
-                <h3>Metamemory</h3>
+                <h3>Meta-Memory</h3>
                 <div className="stats-summary">
-                    <div className="stat-item">
-                        <span className="stat-value">{taskState.memoryData.stats.totalTaggingSessions}</span>
-                        <span className="stat-label">Sessions</span>
-                    </div>
                     <div className="stat-item">
                         <span className="stat-value">{taskState.memoryData.stats.totalTopics}</span>
                         <span className="stat-label">Topics</span>
@@ -466,56 +463,47 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
             )}
 
             <div className="memory-content">
-                {activeTab === 'topics' && (
-                    <div className="topics-section">
-                        {topicTags.size > 0 ? (
+                {activeTab === 'topics' && (<>
+                    {topicTags.size > 0 ? (
+                        <div className="topics-section">
                             <div className="topics-list">
                                 {Array.from(topicTags.entries())
                                     .sort((a, b) => b[1].last_update - a[1].last_update)
                                     .map(([topic, metadata]) => renderTopic(topic, metadata))}
                             </div>
-                        ) : (
-                            <div className="empty-state">
-                                <div className="empty-icon">🏷️</div>
-                                <p>No topics created yet</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    ) : (
+                        <NoContent message="No topics created yet." />
+                    )}
+                </>)}
 
-                {activeTab === 'messages' && (
-                    <div className="messages-section">
-                        {filteredMessages.length > 0 ? (
+                {activeTab === 'messages' && (<>
+                    {filteredMessages.length > 0 ? (
+                        <div className="messages-section">
                             <div className="messages-list">
                                 {filteredMessages
                                     .sort((a, b) => b[1].last_update - a[1].last_update)
                                     .map(([messageId, metadata]) => renderMessage(messageId, metadata))}
                             </div>
-                        ) : (
-                            <div className="empty-state">
-                                <div className="empty-icon">💬</div>
-                                <p>{selectedTopic ? `No messages tagged with "${selectedTopic}"` : 'No messages tagged yet'}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    ) : (
+                        <NoContent message={selectedTopic ? `No messages tagged with "${selectedTopic}".` : 'No messages tagged yet.'} />
+                    )}
+                </>)}
 
-                {activeTab === 'events' && (
-                    <div className="events-section">
-                        {taskState.memoryData.taggingEvents.length > 0 ? (
+                {activeTab === 'events' && (<>
+                    {taskState.memoryData.taggingEvents.length > 0 ? (
+                        <div className="events-section">
                             <div className="events-list">
                                 {taskState.memoryData.taggingEvents
                                     .sort((a, b) => b.startedAt - a.startedAt)
                                     .map(renderTaggingEvent)}
                             </div>
-                        ) : (
-                            <div className="empty-state">
-                                <div className="empty-icon">📝</div>
-                                <p>No tagging events yet</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    ) : (
+                        <NoContent message="No events yet." />
+                    )}
+                </>)}
 
                 {activeTab === 'compaction' && (
                     <div className="compaction-section">
@@ -532,10 +520,7 @@ export const MemoryView: React.FC<MemoryViewProps> = ({
                                     .map(([topic, metadata]) => renderCompactionVisualization(topic, metadata))}
                             </div>
                         ) : (
-                            <div className="empty-state">
-                                <div className="empty-icon">📦</div>
-                                <p>No topics available for compaction</p>
-                            </div>
+                            <NoContent message="No topics available for compaction." />
                         )}
                     </div>
                 )}
