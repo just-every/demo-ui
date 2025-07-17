@@ -25,7 +25,8 @@
     "dev": "rollup -c -w",
     "test": "vitest",
     "lint": "eslint src --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run build"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -70,6 +71,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ensemble/conversation-ui"
+    "url": "git+https://github.com/just-every/demo-ui.git"
+  },
+  "homepage": "https://github.com/just-every/demo-ui#readme",
+  "bugs": {
+    "url": "https://github.com/just-every/demo-ui/issues"
   }
 }
