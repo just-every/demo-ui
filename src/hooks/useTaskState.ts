@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { TaskEventProcessor, type ProcessedEventData } from '../utils/taskEventProcessor';
+import { TaskEventProcessor } from '../utils/taskEventProcessor';
 import { MetaMemoryEventProcessor, type MetaMemoryEventData } from '../utils/metaMemoryEventProcessor';
 import { MetaCognitionEventProcessor, type MetaCognitionEventData } from '../utils/metaCognitionEventProcessor';
 import type { MetaMemoryEvent, MetaCognitionEvent } from '@just-every/task';

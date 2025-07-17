@@ -34,7 +34,7 @@ const TAG_COLORS = [
 ];
 
 // Spacing for branch visual separation
-const BRANCH_SPACING = 20; // Extra space before tag introductions and after branch ends
+// const BRANCH_SPACING = 20; // Extra space before tag introductions and after branch ends - TODO: implement branch spacing
 
 // Function to convert tag names to title case with intelligent capitalization
 const formatTagName = (tag: string): string => {
@@ -107,8 +107,8 @@ export const Conversation: React.FC<ConversationProps> = ({
     const messagesRef = useRef<HTMLDivElement>(null);
     const [messagePositions, setMessagePositions] = useState<number[]>([]);
     const [fullHeight, setFullHeight] = useState(500);
-    const [filteredTag, setFilteredTag] = useState<string | null>(null);
-    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+    // const [filteredTag, setFilteredTag] = useState<string | null>(null); // TODO: implement tag filtering
+    const [highlightedMessageId] = useState<string | null>(null); // setHighlightedMessageId - TODO: implement message highlighting
     const [graphWidth, setGraphWidth] = useState(40);
 
     const showGraph = true; // Always show graph for now
@@ -131,7 +131,7 @@ export const Conversation: React.FC<ConversationProps> = ({
         const messagesContainer = messagesRef.current;
         const positionElements = messagesContainer.querySelectorAll('.message .message-avatar, .tag-introduction');
         const newPositions: number[] = [];
-        let messageIndex = 0;
+        // let messageIndex = 0;
 
         positionElements.forEach((el) => {
             const rect = el.getBoundingClientRect();
@@ -152,7 +152,7 @@ export const Conversation: React.FC<ConversationProps> = ({
                 const relativeTop = rect.top - containerRect.top + messagesContainer.scrollTop;
                 const centerY = relativeTop + (rect.height / 2);
                 newPositions.push(centerY);
-                messageIndex++;
+                // messageIndex++;
             }
         });
 
@@ -229,14 +229,14 @@ export const Conversation: React.FC<ConversationProps> = ({
     }, [taskState.messages, isStreaming, autoScroll, scrollToBottom]);
 
 
-    const handleGraphNodeClick = (positionIndex: number) => {
-        const y = messagePositions[positionIndex] - 100; // Offset for header
-        containerRef.current?.scrollTo({ top: y, behavior: 'smooth' });
-    };
+    // const handleGraphNodeClick = (positionIndex: number) => {
+    //     const y = messagePositions[positionIndex] - 100; // Offset for header
+    //     containerRef.current?.scrollTo({ top: y, behavior: 'smooth' });
+    // };
 
-    const handleGraphNodeHover = (messageId: string | null) => {
-        setHighlightedMessageId(messageId);
-    };
+    // const handleGraphNodeHover = (messageId: string | null) => {
+    //     setHighlightedMessageId(messageId);
+    // };
 
     const seenTags = new Set<string>();
     const processedMessages = new Set<string>(); // Track processed messages to avoid duplicates
@@ -265,9 +265,10 @@ export const Conversation: React.FC<ConversationProps> = ({
                 }
             }
             
-            if (!filteredTag) return true;
-            const tags = getMessageTags(event.message.id);
-            return tags.includes(filteredTag);
+            // if (!filteredTag) return true;
+            // const tags = getMessageTags(event.message.id);
+            // return tags.includes(filteredTag);
+            return true; // TODO: implement tag filtering
         })
         .map((event, index) => {
             const messageId = event.message.id;

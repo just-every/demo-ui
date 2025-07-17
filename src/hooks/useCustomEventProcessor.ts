@@ -65,7 +65,7 @@ export function useCustomEventProcessor<T = any>(
 /**
  * Hook for multiple custom event processors
  */
-export function useMultipleCustomEventProcessors<T extends Record<string, any>>(
+export function useMultipleCustomEventProcessors(
     configs: Record<string, CustomEventProcessorOptions>
 ): {
     processEvent: (event: CustomEvent) => void;
@@ -78,7 +78,7 @@ export function useMultipleCustomEventProcessors<T extends Record<string, any>>(
 
     // Create a processor for each config
     processorKeys.forEach(key => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
+        // eslint-disable-next-line
         processors[key] = useCustomEventProcessor(configs[key]);
     });
 

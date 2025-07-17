@@ -11,8 +11,9 @@ export { Header, type HeaderProps, type HeaderTab } from './components/Header';
 export { default as LLMRequestLog } from './components/LLMRequestLog';
 export type { LLMRequestData } from './utils/llmLogger';
 export { RequestDemoLogger, enableRequestDemoLogger } from './utils/llmLogger';
-export { CostDemoLogger, enableCostDemoLogger } from './utils/costLogger';
-export type { CostData } from './utils/costLogger';
+// Server-side only - not available in browser build
+// export { CostDemoLogger, enableCostDemoLogger } from './utils/costLogger';
+// export type { CostData } from './utils/costLogger';
 export { CostView } from './components/CostView';
 export type { CostViewProps } from './components/CostView';
 

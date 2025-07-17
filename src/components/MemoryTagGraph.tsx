@@ -50,7 +50,7 @@ export const MemoryTagGraph: React.FC<MemoryTagGraphProps> = ({
     fullHeight,
     className = '',
     onWidthChange,
-    isStreaming = false,
+    // isStreaming = false,
     isLoading = false,
 }) => {
 
@@ -210,7 +210,7 @@ export const MemoryTagGraph: React.FC<MemoryTagGraphProps> = ({
         return { tagBranches: branches, branchXPositions: positions, domIndexForMessage, minY, maxY, adjustedMinY, adjustedMaxY };
     }, [messages, memoryData, messagePositions]);
 
-    const { tagBranches, branchXPositions, domIndexForMessage, minY, maxY, adjustedMinY, adjustedMaxY } = memoizedData;
+    const { tagBranches, branchXPositions, domIndexForMessage, adjustedMinY, adjustedMaxY } = memoizedData;
 
     const trunkX = 10;
     const maxX = branchXPositions.size > 0 ? Math.max(...branchXPositions.values()) : 0;

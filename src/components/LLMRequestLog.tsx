@@ -94,7 +94,7 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
               )}
               {request.tags && request.tags.length > 0 && (
                 <div className="request-tags">
-                  {request.tags.map((tag: string, index: number) => (
+                  {request.tags.map((tag: string) => (
                     <span key={tag} className="request-tag">
                       {tag}
                     </span>
@@ -166,7 +166,7 @@ export default function LLMRequestLog({ requests: requestsProp, taskState }: LLM
                     <div className="metadata-tags">
                       <strong>Tags:</strong>
                       <div className="request-tags">
-                        {selectedRequestData.tags.map((tag: string, index: number) => (
+                        {selectedRequestData.tags.map((tag: string) => (
                           <span key={tag} className="request-tag">
                             {tag}
                           </span>

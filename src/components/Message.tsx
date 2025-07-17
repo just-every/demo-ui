@@ -173,14 +173,14 @@ export const Message: React.FC<MessageProps> = ({
             return [];
         }
         
-        const mdFileRegex = /(?:^|\s)([\w\-\.\/@]+\.md)(?:\s|$)/gm;
+        const mdFileRegex = /(?:^|\s)([\w\-./@]+\.md)(?:\s|$)/gm;
         const matches = [];
         let match;
         
         while ((match = mdFileRegex.exec(content)) !== null) {
             const path = match[1];
             // Only include paths that look like valid file paths
-            if (path.includes('/') || path.match(/^[\w\-]+\.md$/)) {
+            if (path.includes('/') || path.match(/^[\w-]+\.md$/)) {
                 matches.push(path);
             }
         }
