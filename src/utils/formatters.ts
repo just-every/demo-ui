@@ -94,4 +94,25 @@ export const formatModelName = (model: string): string => {
         .join(' ');
 };
 
+/**
+ * Format file size with appropriate unit
+ */
+export const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1000; // Use 1000 for file sizes (not 1024)
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+};
+
+/**
+ * Format date to ISO string for display
+ */
+export const formatISODate = (date: Date | string | number): string => {
+    const d = new Date(date);
+    return d.toISOString().split('T')[0];
+};
+
 
