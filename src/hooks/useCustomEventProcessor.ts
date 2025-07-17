@@ -17,6 +17,7 @@ export interface UseCustomEventProcessorReturn<T> {
 
 /**
  * React hook for custom event processing
+ * @template T The type of the state managed by the processor
  */
 export function useCustomEventProcessor<T = any>(
     options: CustomEventProcessorOptions<T>
