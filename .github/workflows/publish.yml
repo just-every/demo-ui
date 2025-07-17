@@ -15,6 +15,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     name: Build and Publish
@@ -124,24 +128,22 @@ jobs:
       if: steps.version.outputs.skip_push != 'true'
       
     - name: Create GitHub Release
-      uses: actions/create-release@v1
+      run: |
+        gh release create v${{ steps.version.outputs.version }} \
+          --title "Release v${{ steps.version.outputs.version }}" \
+          --notes "## Changes in this release
+        
+        - Automated release from commit ${{ github.sha }}
+        
+        ### Installation
+        
+        \`\`\`bash
+        npm install @just-every/demo-ui@${{ steps.version.outputs.version }}
+        \`\`\`
+        
+        For full changelog, see the [commit history](https://github.com/just-every/demo-ui/commits/v${{ steps.version.outputs.version }})." \
+          --target main
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.version.outputs.version }}
-        release_name: Release v${{ steps.version.outputs.version }}
-        body: |
-          ## Changes in this release
-          
-          - Automated release from commit ${{ github.sha }}
-          
-          ### Installation
-          
-          ```bash
-          npm install @just-every/demo-ui@${{ steps.version.outputs.version }}
-          ```
-          
-          For full changelog, see the [commit history](https://github.com/just-every/demo-ui/compare/v${{ steps.version.outputs.version }}...main).
-        draft: false
-        prerelease: false
+        GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
       if: steps.version.outputs.skip_push != 'true' && steps.should_publish.outputs.publish == 'true'
+      continue-on-error: true
