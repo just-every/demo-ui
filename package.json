@@ -76,5 +76,8 @@
   "homepage": "https://github.com/just-every/demo-ui#readme",
   "bugs": {
     "url": "https://github.com/just-every/demo-ui/issues"
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
   }
 }
