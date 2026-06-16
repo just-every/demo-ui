@@ -31,7 +31,7 @@
   "peerDependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "ws": "^8.0.0"
+    "ws": "^8.21.0"
   },
   "dependencies": {
     "@just-every/ensemble": "^0.2.140",
@@ -78,6 +78,8 @@
     "url": "https://github.com/just-every/demo-ui/issues"
   },
   "overrides": {
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "js-yaml": "4.2.0",
+    "ws": "^8.21.0"
   }
 }
