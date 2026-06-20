@@ -36,7 +36,7 @@
   "dependencies": {
     "@just-every/ensemble": "^0.2.140",
     "@just-every/task": "^0.2.31",
-    "dompurify": "^3.0.0",
+    "dompurify": "^3.4.11",
     "isomorphic-dompurify": "^2.0.0",
     "marked": "^9.0.0",
     "react-markdown": "^10.1.0"
